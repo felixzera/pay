@@ -1,5 +1,6 @@
 import React, { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
+import { NumberParser } from '@internationalized/number';
 import useField from '../../useField';
 import Label from '../../Label';
 import Error from '../../Error';
@@ -29,6 +30,7 @@ const NumberField: React.FC<Props> = (props) => {
       placeholder,
       description,
       condition,
+      formatOptions,
     } = {},
   } = props;
 
@@ -52,14 +54,15 @@ const NumberField: React.FC<Props> = (props) => {
   });
 
   const handleChange = useCallback((e) => {
-    const val = parseFloat(e.target.value);
-
+    const val = formatOptions
+      ? new NumberParser(i18n.language, formatOptions).parse(e.target.value)
+      : parseFloat(e.target.value);
     if (Number.isNaN(val)) {
       setValue('');
     } else {
       setValue(val);
     }
-  }, [setValue]);
+  }, [setValue, formatOptions, i18n.language]);
 
   const classes = [
     'field-type',
@@ -86,24 +89,46 @@ const NumberField: React.FC<Props> = (props) => {
         label={label}
         required={required}
       />
-      <input
-        id={`field-${path.replace(/\./gi, '__')}`}
-        value={typeof value === 'number' ? value : ''}
-        onChange={handleChange}
-        disabled={readOnly}
-        placeholder={getTranslation(placeholder, i18n)}
-        type="number"
-        name={path}
-        step={step}
-        onWheel={(e) => {
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore
-          e.target.blur();
-        }}
-      />
+      <div className="number__wrap">
+        {formatOptions ? (
+          <React.Fragment>
+            <input
+              value={typeof value === 'number' ? value : ''}
+              type="hidden"
+              name={path}
+            />
+            <input
+              id={`field-${path.replace(/\./gi, '__')}`}
+              value={typeof value === 'number' ? new Intl.NumberFormat(i18n.language, formatOptions).format(value) : ''}
+              onChange={handleChange}
+              disabled={readOnly}
+              placeholder={getTranslation(placeholder, i18n)}
+              type="text"
+              onWheel={(e) => {
+                (e.target as HTMLInputElement).blur();
+              }}
+            />
+          </React.Fragment>
+        ) : (
+          <input
+            id={`field-${path.replace(/\./gi, '__')}`}
+            value={typeof value === 'number' ? value : ''}
+            onChange={handleChange}
+            disabled={readOnly}
+            placeholder={getTranslation(placeholder, i18n)}
+            type="number"
+            name={path}
+            step={step}
+            onWheel={(e) => {
+              (e.target as HTMLInputElement).blur();
+            }}
+          />
+        )}
+      </div>
       <FieldDescription
         value={value}
         description={description}
+        formatOptions={formatOptions}
       />
     </div>
   );

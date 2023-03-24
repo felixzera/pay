@@ -92,6 +92,34 @@ describe('fields', () => {
     });
   });
 
+  describe('number', () => {
+    let url: AdminUrlUtil;
+    beforeAll(() => {
+      url = new AdminUrlUtil(serverURL, 'number-fields');
+    });
+
+    test('should show formatted number in list view', async () => {
+      await page.goto(url.list);
+      await expect(page.locator('.cell-formattedNumber')).toHaveText('5 liters');
+    });
+
+    test('should pass admin language to description', async () => {
+      await page.goto(url.create);
+      const field = page.locator('#field-formattedNumber');
+      await field.fill('10');
+
+      await expect(page.locator('label[for="field-formattedNumber"] ~ .field-description')).toHaveText('10 liters');
+    });
+
+    test('should populate formatted input field', async () => {
+      await page.goto(url.create);
+      const field = page.locator('#field-formattedNumber');
+      await field.fill('10');
+
+      await expect(page.locator('#field-formattedNumber')).toHaveValue('10 liters');
+    });
+  });
+
   describe('radio', () => {
     let url: AdminUrlUtil;
     beforeAll(() => {

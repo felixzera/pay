@@ -1,3 +1,4 @@
+import { DescriptionFunction } from '../../../../src/admin/components/forms/FieldDescription/types';
 import type { CollectionConfig } from '../../../../src/collections/config/types';
 
 export const defaultNumber = 5;
@@ -11,6 +12,23 @@ const NumberFields: CollectionConfig = {
     {
       name: 'number',
       type: 'number',
+    },
+    {
+      name: 'formattedNumber',
+      type: 'number',
+      defaultValue: defaultNumber,
+      admin: {
+        description: (({ value, language }) => new Intl.NumberFormat(language, {
+          style: 'unit',
+          unit: 'liter',
+          unitDisplay: 'long',
+        }).format(value as number)) as DescriptionFunction,
+        formatOptions: {
+          style: 'unit',
+          unit: 'liter',
+          unitDisplay: 'long',
+        },
+      },
     },
     {
       name: 'min',

@@ -6,6 +6,7 @@ import RenderCustomComponent from '../../../../utilities/RenderCustomComponent';
 import cellComponents from './field-types';
 import { Props } from './types';
 import { getTranslation } from '../../../../../../utilities/getTranslation';
+import { NumberField } from '../../../../../../fields/config/types';
 
 const DefaultCell: React.FC<Props> = (props) => {
   const {
@@ -56,7 +57,7 @@ const DefaultCell: React.FC<Props> = (props) => {
       <WrapElement {...wrapElementProps}>
         {((cellData === '' || typeof cellData === 'undefined') && 'label' in field) && t('noLabel', { label: getTranslation(typeof field.label === 'function' ? 'data' : field.label || 'data', i18n) })}
         {typeof cellData === 'string' && cellData}
-        {typeof cellData === 'number' && cellData}
+        {typeof cellData === 'number' && ((field as NumberField).admin.formatOptions ? new Intl.NumberFormat(i18n.language, (field as NumberField).admin.formatOptions).format(cellData) : cellData)}
         {typeof cellData === 'object' && JSON.stringify(cellData)}
       </WrapElement>
     );
