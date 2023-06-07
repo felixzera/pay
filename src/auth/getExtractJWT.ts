@@ -12,12 +12,16 @@ const getExtractJWT = (config: SanitizedConfig) => (req: Request): string | null
       return jwtFromHeader.replace('JWT ', '');
     }
 
-    const cookies = parseCookies(req);
-    const tokenCookieName = `${config.cookiePrefix}-token`;
+    if (!origin || config.csrf.length === 0 || config.csrf.indexOf(origin) > -1) {
+      const cookies = parseCookies(req);
+      if (cookies) {
+        const collectionPrefixes = config.collections.filter((collection) => collection.auth.cookies.prefix).map((collection) => collection.auth.cookies.prefix);
+        const prefixes = [...collectionPrefixes, config.cookiePrefix];
+        const foundPrefix = prefixes.find((prefix) => cookies[`${prefix}-token`]);
 
-    if (cookies && cookies[tokenCookieName]) {
-      if (!origin || config.csrf.length === 0 || config.csrf.indexOf(origin) > -1) {
-        return cookies[tokenCookieName];
+        if (foundPrefix) {
+          return cookies[`${foundPrefix}-token`];
+        }
       }
     }
   }

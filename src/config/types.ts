@@ -383,7 +383,7 @@ export type Config = {
    */
   serverURL?: string;
   /**
-   * Prefix a string to all cookies that Payload sets.
+   * Prefix a string to all cookies that Payload sets. `prefix` in `collection.auth.cookie` will take precedence per collection.
    *
    * @default "payload"
    */
