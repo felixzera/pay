@@ -2,6 +2,7 @@
 import { Collection } from '../../collections/config/types';
 import { RichTextField, Field } from '../config/types';
 import { PayloadRequest } from '../../express/types';
+import { deepPick } from '../deepPick';
 
 type Arguments = {
   data: unknown
@@ -24,6 +25,7 @@ export const populate = async ({
   currentDepth,
   req,
   showHiddenFields,
+  field,
 }: Omit<Arguments, 'field'> & {
   id: string,
   field: Field
@@ -43,7 +45,21 @@ export const populate = async ({
   ]));
 
   if (doc) {
-    dataRef[key] = doc;
+    if (field.type === 'richText' && field.select && req.payloadAPI !== 'GraphQL') {
+      const fieldsOrTrue = field.select({
+        data: doc,
+        collection: collection.config,
+        siblingData: dataRef,
+        req,
+      });
+      if (fieldsOrTrue === true) {
+        dataRef[key] = doc;
+      } else {
+        dataRef[key] = deepPick(doc, { id: true, ...fieldsOrTrue });
+      }
+    } else {
+      dataRef[key] = doc;
+    }
   } else {
     dataRef[key] = null;
   }

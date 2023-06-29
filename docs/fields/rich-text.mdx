@@ -21,6 +21,7 @@ The Admin component is built on the powerful [`slatejs`](https://docs.slatejs.or
 | Option           | Description |
 | ---------------- | ----------- |
 | **`name`** *         | To be used as the property name when stored and retrieved from the database. [More](/docs/fields/overview#field-names) |
+| **`select`**         | Provides a way to select which fields to return from the related documents. [More](#selecting-fields) |
 | **`label`**          | Text used as a field label in the Admin panel or an object with keys for each language. |
 | **`validate`**       | Provide a custom validation function that will be executed on both the Admin panel and the backend. [More](/docs/fields/overview#validation) |
 | **`saveToJWT`**      | If this field is top-level and nested in a config supporting [Authentication](/docs/authentication/config), include its data in the user JWT. |
@@ -371,4 +372,43 @@ import type {
   RichTextCustomElement,
   RichTextCustomLeaf,
 } from 'payload/types';
+```
+
+### Selecting fields
+
+<Banner type="info">
+  <strong>Note:</strong><br/>
+  The select property is ignored when using <strong>GraphQL</strong>.
+</Banner>
+
+By default, the entire related document is returned when querying for a relationship field.
+You can limit the fields returned by using the `select` property.
+The `select` property is a function that will be called with an argument object with the following properties:
+
+| Property      | Description                                                                          |
+| ------------- | ------------------------------------------------------------------------------------ |
+| `data`        | An object of the full relationship value                                             |
+| `collection`  | The collection config of the related collection                                      |
+| `siblingData` | An object of the document data limited to fields within the same parent to the field |
+| `req`         | The Express `request` object containing the currently authenticated `user`           |
+
+and should return an object were the key is the field name and the value is either a nested object
+or `true` to select or `true` to select all fields.
+
+**Example:**
+
+```js
+const fields = {
+  type: 'rich-text',
+  name: 'content',
+  label: 'Content',
+  select: ({ data, collection, siblingData, req }) => {
+    if (collection.slug === 'posts' && data.type === 'related-post') {
+      // only select the title and slug field from the related collection
+      return { title: true, slug: true };
+    }
+    // select all fields
+    return true;
+  },
+}
 ```

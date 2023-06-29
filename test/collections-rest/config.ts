@@ -5,6 +5,7 @@ import { buildConfig } from '../buildConfig';
 export interface Relation {
   id: string;
   name: string;
+  otherField: string;
 }
 
 const openAccess = {
@@ -21,6 +22,10 @@ const collectionWithName = (collectionSlug: string): CollectionConfig => {
     fields: [
       {
         name: 'name',
+        type: 'text',
+      },
+      {
+        name: 'otherField',
         type: 'text',
       },
     ],
@@ -86,6 +91,7 @@ export default buildConfig({
           name: 'relationField',
           type: 'relationship',
           relationTo: relationSlug,
+          select: { name: true },
         },
         // Relation hasMany
         {
@@ -93,18 +99,21 @@ export default buildConfig({
           type: 'relationship',
           relationTo: relationSlug,
           hasMany: true,
+          select: { name: true },
         },
         // Relation multiple relationTo
         {
           name: 'relationMultiRelationTo',
           type: 'relationship',
           relationTo: [relationSlug, 'dummy'],
+          select: () => ({ name: true }),
         },
         // Relation multiple relationTo hasMany
         {
           name: 'relationMultiRelationToHasMany',
           type: 'relationship',
           relationTo: [relationSlug, 'dummy'],
+          select: () => true,
           hasMany: true,
         },
         {

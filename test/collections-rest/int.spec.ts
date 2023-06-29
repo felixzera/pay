@@ -7,6 +7,7 @@ import payload from '../../src';
 import { RESTClient } from '../helpers/rest';
 import type { ErrorOnHook, Post } from './payload-types';
 import { mapAsync } from '../../src/utilities/mapAsync';
+import type { FieldBase, RelationshipField } from '../../src/fields/config/types';
 
 let client: RESTClient;
 
@@ -378,12 +379,14 @@ describe('collections-rest', () => {
       let relation2: Relation;
       const nameToQuery = 'name';
       const nameToQuery2 = 'name2';
+      const otherField = 'otherField';
 
       beforeEach(async () => {
         ({ doc: relation } = await client.create<Relation>({
           slug: relationSlug,
           data: {
             name: nameToQuery,
+            otherField,
           },
         }));
 
@@ -391,6 +394,7 @@ describe('collections-rest', () => {
           slug: relationSlug,
           data: {
             name: nameToQuery2,
+            otherField,
           },
         }));
 
@@ -407,6 +411,9 @@ describe('collections-rest', () => {
             query: {
               'relationField.name': {
                 equals: relation.name,
+              },
+              'relationField.otherField': {
+                equals: undefined,
               },
             },
           });
@@ -441,6 +448,9 @@ describe('collections-rest', () => {
             'relationHasManyField.name': {
               equals: relation.name,
             },
+            'relationHasManyField.otherField': {
+              equals: undefined,
+            },
           },
         });
 
@@ -453,6 +463,9 @@ describe('collections-rest', () => {
           query: {
             'relationHasManyField.name': {
               equals: relation2.name,
+            },
+            'relationHasManyField.otherField': {
+              equals: undefined,
             },
           },
         });
@@ -520,6 +533,106 @@ describe('collections-rest', () => {
         });
 
         it.todo('nested by property value');
+      });
+
+      describe('selecting fields', () => {
+        it('should select fields when array is passed', async () => {
+          const { status, result } = await client.find<Post>({
+            query: {
+              'relationField.name': {
+                equals: relation.name,
+              },
+            },
+          });
+
+          expect(status).toEqual(200);
+          expect(result.docs).toEqual([post]);
+          expect(result.docs[0].relationField).toEqual({
+            id: relation.id,
+            name: relation.name,
+          });
+          expect(result.totalDocs).toEqual(1);
+        });
+        it('should select fields when function is passed', async () => {
+          const post1 = await createPost({
+            relationMultiRelationTo: { relationTo: relationSlug, value: relation.id },
+          });
+          await createPost();
+
+          const { status, result } = await client.find<Post>({
+            query: {
+              'relationMultiRelationTo.value': {
+                equals: relation.id,
+              },
+            },
+          });
+
+          expect(status).toEqual(200);
+          expect(result.docs).toEqual([post1]);
+          expect(result.docs[0].relationMultiRelationTo?.value).toEqual({
+            id: relation.id,
+            name: relation.name,
+          });
+          expect(result.totalDocs).toEqual(1);
+        });
+        it('should select all fields when function returns true', async () => {
+          const post1 = await createPost({
+            relationMultiRelationToHasMany: [
+              { relationTo: relationSlug, value: relation.id },
+              { relationTo: relationSlug, value: relation2.id },
+            ],
+          });
+          await createPost();
+
+          const { status, result } = await client.find<Post>({
+            query: {
+              'relationMultiRelationToHasMany.value': {
+                equals: relation.id,
+              },
+            },
+          });
+
+          expect(status).toEqual(200);
+          expect(result.docs).toEqual([post1]);
+          expect(result.docs[0].relationMultiRelationToHasMany).toContainEqual({
+            relationTo: relationSlug,
+            value: relation,
+          });
+          expect(result.docs[0].relationMultiRelationToHasMany).toContainEqual({
+            relationTo: relationSlug,
+            value: relation2,
+          });
+          expect(result.totalDocs).toEqual(1);
+        });
+        it('should call function with data and collection', async () => {
+          const collection = payload.config.collections.find((col) => col.slug === slug);
+          const field = collection?.fields.find((collectionField) => ((collectionField as FieldBase).name === 'relationField'));
+          expect(field).toBeDefined();
+          expect(field?.type).toEqual('relationship');
+          const originalSelect = (field as RelationshipField).select;
+          try {
+            let selectArgs;
+            (field as RelationshipField).select = (args) => {
+              selectArgs = args;
+              return [];
+            };
+            await client.find<Post>({
+              query: {
+                relationField: {
+                  equals: relation.id,
+                },
+              },
+            });
+            expect(selectArgs).toBeDefined();
+            expect(selectArgs.data).toEqual(relation);
+            const relationCollection = payload.config.collections.find((col) => col.slug === relationSlug);
+            expect(selectArgs.collection).toEqual(relationCollection);
+          } finally {
+            // reset select
+            (field as RelationshipField).select = originalSelect;
+          }
+        });
+        it.todo('should select fields from nested relationship');
       });
     });
 

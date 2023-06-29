@@ -11,6 +11,7 @@ import { blocksFieldSeedData } from './collections/Blocks';
 import { localizedTextValue, namedTabDefaultValue, namedTabText, tabsDoc, tabsSlug } from './collections/Tabs';
 import { defaultNumber, numberDoc } from './collections/Number';
 import { dateDoc } from './collections/Date';
+import { deepPick } from '../../src/fields/deepPick';
 
 let client;
 let serverURL;
@@ -730,5 +731,118 @@ describe('Fields', () => {
       expect(typeof child.doc.value.id).toBe('string');
       expect(child.doc.value.items).toHaveLength(6);
     });
+    it('should only return selected fields of the relationship', async () => {
+      const query = await payload.find({
+        collection: 'rich-text-fields',
+        where: {
+          'richText.children.linkType': {
+            equals: 'internal',
+          },
+        },
+      });
+
+      const nodes = query.docs[0].richText;
+      expect(nodes).toBeDefined();
+      expect(nodes).toContainEqual({
+        children: expect.arrayContaining([
+          expect.objectContaining({
+            doc: expect.objectContaining({
+              relationTo: 'array-fields',
+              value: {
+                id: expect.any(String),
+                items: expect.any(Array),
+                localized: expect.any(Array),
+              },
+            }),
+          }),
+        ]),
+      });
+    });
+  });
+});
+
+describe('deepPick', () => {
+  const testData = {
+    a: 'value a',
+    b: 42,
+    c: {
+      d: true,
+      e: {
+        f: 'value f',
+        g: [1, 2, 3],
+      },
+      h: [
+        {
+          i: 'value i',
+          j: 'value j',
+        },
+        {
+          i: 'value i2',
+          j: 'value j2',
+        },
+      ],
+    },
+  };
+
+  it('should pick a single top-level property', () => {
+    const result = deepPick(testData, { a: true });
+    expect(result).toStrictEqual({ a: 'value a' });
+  });
+
+  it('should pick multiple top-level properties', () => {
+    const result = deepPick(testData, { a: true, c: true });
+    expect(result).toStrictEqual({
+      a: 'value a',
+      c: {
+        d: true,
+        e: {
+          f: 'value f',
+          g: [1, 2, 3],
+        },
+        h: [
+          {
+            i: 'value i',
+            j: 'value j',
+          },
+          {
+            i: 'value i2',
+            j: 'value j2',
+          },
+        ],
+      },
+    });
+  });
+
+  it('should pick deep properties', () => {
+    const result = deepPick(testData, { c: { e: { f: true } } });
+    expect(result).toStrictEqual({
+      c: {
+        e: { f: 'value f' },
+      },
+    });
+  });
+
+  it('should pick properties inside arrays', () => {
+    const result = deepPick(testData, {
+      c: { h: { i: true }, e: { g: true } },
+    });
+    expect(result).toStrictEqual({
+      c: { e: { g: [1, 2, 3] }, h: [{ i: 'value i' }, { i: 'value i2' }] },
+    });
+  });
+
+  it('should handle non-existent properties', () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const result = deepPick(testData, { x: true } as any);
+    expect(result).toStrictEqual({});
+  });
+
+  it('should handle non-existent deep properties', () => {
+    const result = deepPick(testData, { c: { x: true } } as any);
+    expect(result).toStrictEqual({});
+  });
+  it('should handle empty paths array', () => {
+    const result = deepPick(testData, {});
+    expect(result).toStrictEqual({});
   });
 });
