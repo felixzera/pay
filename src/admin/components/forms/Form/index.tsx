@@ -25,6 +25,7 @@ import { Fields, Context as FormContextType, GetDataByPath, Props, SubmitOptions
 import { SubmittedContext, ProcessingContext, ModifiedContext, FormContext, FormFieldsContext, FormWatchContext } from './context';
 import buildStateFromSchema from './buildStateFromSchema';
 import { useOperation } from '../../utilities/OperationProvider';
+import { generateStrFromObj } from './generateArray';
 
 const baseClass = 'form';
 
@@ -386,10 +387,50 @@ const Form: React.FC<Props> = (props) => {
     setModified(false);
   }, [locale]);
 
-  const classes = [
-    className,
-    baseClass,
-  ].filter(Boolean).join(' ');
+  const classes = [className, baseClass].filter(Boolean).join(" ");
+
+  // PROPOSAL TO DISABLE DRAFT BUTTON
+  const initialStateString = useRef<string>("");
+  const currentStateString = useRef<string>("");
+
+  // generate and cache initial state string, only runs on first load and/or when initialStage changes (i.e when the Save Draft button is cliked)
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      initialStateString.current = generateStrFromObj({ ...getData() });
+    }, 500);
+
+    return () => {
+      clearTimeout(timeout);
+    };
+  }, [initialState]);
+
+  // generate current state string | compare states | setModified to its initial state
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      // generate current state string from array
+      currentStateString.current = generateStrFromObj({ ...getData() });
+
+      // function to compare state strings
+      const stateHasChanged = () => {
+        if (initialStateString.current === currentStateString.current) {
+          return false;
+        } else {
+          return true;
+        }
+      };
+
+      // only setModified to false when 'stateHasChanged()' result is different to the payloadcms modified variable value, currently payloadcms works this way: when on first load the modified variable will be false, when we start adding/changing fields modified will be true, but if we reverse all the changes, modified will still be true, at this point stateHasChanged() will be false so this 'if' statement will run and set the modified variable to false as its initial state
+      if (stateHasChanged() !== modified) {
+        setModified(false);
+      }
+    }, 500);
+
+    return () => {
+      clearTimeout(timeout);
+    };
+  }, [fields]);
+
+  // END OF PROPOSAL
 
   return (
     <form
