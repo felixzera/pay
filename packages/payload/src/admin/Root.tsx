@@ -9,17 +9,18 @@ import { ScrollInfoProvider } from '@faceless-ui/scroll-info';
 import { WindowInfoProvider } from '@faceless-ui/window-info';
 import { ModalProvider, ModalContainer } from '@faceless-ui/modal';
 import { ToastContainer, Slide } from 'react-toastify';
-import { AuthProvider } from './components/utilities/Auth/index.js';
-import { ConfigProvider } from './components/utilities/Config/index.js';
-import { PreferencesProvider } from './components/utilities/Preferences/index.js';
-import { CustomProvider } from './components/utilities/CustomProvider/index.js';
-import { SearchParamsProvider } from './components/utilities/SearchParams/index.js';
-import { LocaleProvider } from './components/utilities/Locale/index.js';
-import Routes from './components/Routes.js';
-import { StepNavProvider } from './components/elements/StepNav/index.js';
-import { ThemeProvider } from './components/utilities/Theme/index.js';
-import { I18n } from './components/utilities/I18n/index.js';
-import { LoadingOverlayProvider } from './components/utilities/LoadingOverlay/index.js';
+import i18next from 'i18next';
+import { AuthProvider } from './components/utilities/Auth';
+import { ConfigProvider } from './components/utilities/Config';
+import { PreferencesProvider } from './components/utilities/Preferences';
+import { CustomProvider } from './components/utilities/CustomProvider';
+import { SearchParamsProvider } from './components/utilities/SearchParams';
+import { LocaleProvider } from './components/utilities/Locale';
+import Routes from './components/Routes';
+import { StepNavProvider } from './components/elements/StepNav';
+import { ThemeProvider } from './components/utilities/Theme';
+import { I18n } from './components/utilities/I18n';
+import { LoadingOverlayProvider } from './components/utilities/LoadingOverlay';
 
 import './scss/app.scss';
 
@@ -68,6 +69,7 @@ const Root = () => (
       position="bottom-center"
       transition={Slide}
       icon={false}
+      rtl={i18next.dir() === 'rtl'}
     />
   </React.Fragment>
 );

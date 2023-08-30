@@ -1,25 +1,12 @@
 import React from 'react';
 import Helmet from 'react-helmet';
-import { useTranslation } from 'react-i18next';
-import { useConfig } from '../Config/index.js';
-import { Props } from './types.js';
+import i18next from 'i18next';
+import { useConfig } from '../Config';
+import { Props } from './types';
 import payloadFavicon from '../../../assets/images/favicon.svg';
 import payloadOgImage from '../../../assets/images/og-image.png';
 import useMountEffect from '../../../hooks/useMountEffect.js';
 
-const rtlLanguages = [
-  'ar',
-  'fa',
-  'ha',
-  'ku',
-  'ur',
-  'ps',
-  'dv',
-  'ks',
-  'khw',
-  'he',
-  'yi',
-];
 
 const Meta: React.FC<Props> = ({
   description,
@@ -28,10 +15,6 @@ const Meta: React.FC<Props> = ({
   title,
   keywords = 'CMS, Admin, Dashboard',
 }) => {
-  const { i18n } = useTranslation();
-  const currentLanguage = i18n.language;
-  const currentDirection = rtlLanguages.includes(currentLanguage) ? 'RTL' : 'LTR';
-
   const config = useConfig();
   const titleSuffix = config.admin.meta?.titleSuffix ?? '- Payload';
   const favicon = config.admin.meta.favicon ?? payloadFavicon;
@@ -48,8 +31,8 @@ const Meta: React.FC<Props> = ({
   return (
     <HelmetToUse
       htmlAttributes={{
-        lang: currentLanguage,
-        dir: currentDirection,
+        lang: i18next.language,
+        dir: i18next.dir(),
       }}
       title={`${title} ${titleSuffix}`}
       meta={[

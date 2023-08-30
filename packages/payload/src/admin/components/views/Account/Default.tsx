@@ -1,28 +1,29 @@
 import React, { useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useConfig } from '../../utilities/Config/index.js';
-import Eyebrow from '../../elements/Eyebrow/index.js';
-import Form from '../../forms/Form/index.js';
-import PreviewButton from '../../elements/PreviewButton/index.js';
-import { Save } from '../../elements/Save/index.js';
-import RenderFields from '../../forms/RenderFields/index.js';
-import CopyToClipboard from '../../elements/CopyToClipboard/index.js';
-import fieldTypes from '../../forms/field-types/index.js';
-import RenderTitle from '../../elements/RenderTitle/index.js';
-import LeaveWithoutSaving from '../../modals/LeaveWithoutSaving/index.js';
-import Meta from '../../utilities/Meta/index.js';
-import Auth from '../collections/Edit/Auth/index.js';
-import { Props } from './types.js';
-import { OperationContext } from '../../utilities/OperationProvider/index.js';
-import { ToggleTheme } from './ToggleTheme/index.js';
-import { Gutter } from '../../elements/Gutter/index.js';
-import ReactSelect from '../../elements/ReactSelect/index.js';
-import Label from '../../forms/Label/index.js';
-import type { Translation } from '../../../../translations/type.js';
-import { LoadingOverlayToggle } from '../../elements/Loading/index.js';
-import { formatDate } from '../../../utilities/formatDate/index.js';
-import { useAuth } from '../../utilities/Auth/index.js';
+import { useConfig } from '../../utilities/Config';
+import Eyebrow from '../../elements/Eyebrow';
+import Form from '../../forms/Form';
+import PreviewButton from '../../elements/PreviewButton';
+import { Save } from '../../elements/Save';
+import RenderFields from '../../forms/RenderFields';
+import CopyToClipboard from '../../elements/CopyToClipboard';
+import fieldTypes from '../../forms/field-types';
+import RenderTitle from '../../elements/RenderTitle';
+import LeaveWithoutSaving from '../../modals/LeaveWithoutSaving';
+import Meta from '../../utilities/Meta';
+import Auth from '../collections/Edit/Auth';
+import { Props } from './types';
+import { OperationContext } from '../../utilities/OperationProvider';
+import { ToggleTheme } from './ToggleTheme';
+import { Gutter } from '../../elements/Gutter';
+import ReactSelect from '../../elements/ReactSelect';
+import Label from '../../forms/Label';
+import type { Translation } from '../../../../translations/type';
+import { LoadingOverlayToggle } from '../../elements/Loading';
+import { formatDate } from '../../../utilities/formatDate';
+import { useAuth } from '../../utilities/Auth';
+import useLanguage from '../../../hooks/useLanguage';
 
 import './index.scss';
 
@@ -55,6 +56,7 @@ const DefaultAccount: React.FC<Props> = (props) => {
   const { refreshCookieAsync } = useAuth();
   const { admin: { dateFormat }, routes: { admin } } = useConfig();
   const { t, i18n } = useTranslation('authentication');
+  const { setLanguage } = useLanguage();
 
   const languageOptions = Object.entries(i18n.options.resources).map(([language, resource]) => (
     { label: (resource as Translation).general.thisLanguage, value: language }
@@ -137,7 +139,7 @@ const DefaultAccount: React.FC<Props> = (props) => {
                         inputId="language-select"
                         value={languageOptions.find((language) => (language.value === i18n.language))}
                         options={languageOptions}
-                        onChange={({ value }) => (i18n.changeLanguage(value))}
+                        onChange={({ value }) => (setLanguage(value))}
                       />
                     </div>
                     <ToggleTheme />

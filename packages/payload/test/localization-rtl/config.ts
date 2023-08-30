@@ -1,35 +1,20 @@
-import { devUser } from '../credentials.js';
-import { Users } from './collections/users.js';
-import { Posts } from './collections/posts.js';
-import en from '../../src/translations/en.json';
-import { ar } from './ar.js' assert { type: "json" };
-import deepMerge from './deepMerge.js';
-import { buildConfigWithDefaults } from '../buildConfigWithDefaults.js';
+import { devUser } from '../credentials';
+import { localization } from './localization';
+import { Users } from './collections/users';
+import { Posts } from './collections/posts';
+import { Roles } from './collections/roles';
+import { Orders } from './collections/orders';
+import { i18n } from './i18n';
+import { buildConfigWithDefaults } from '../buildConfigWithDefaults';
+import { Categories } from './collections/categories';
+import { Customers } from './collections/customers';
+import type { Config } from '../../src/config/types';
+import config2 from './fields/config';
 
-export default buildConfigWithDefaults({
-  collections: [Users, Posts],
-  i18n: {
-    fallbackLng: 'en', // default
-    debug: false, // default
-    resources: {
-      ar: deepMerge(en, ar),
-    },
-  },
-  localization: {
-    locales: [
-      {
-        label: 'English',
-        code: 'en',
-      },
-      {
-        label: 'Arabic',
-        code: 'ar',
-        rtl: true,
-      },
-    ],
-    defaultLocale: 'en',
-    fallback: true,
-  },
+const config1 = {
+  collections: [Users, Posts, Roles, Orders, Customers, Categories],
+  i18n,
+  localization,
   onInit: async (payload) => {
     await payload.create({
       collection: 'users',
@@ -39,4 +24,6 @@ export default buildConfigWithDefaults({
       },
     });
   },
-});
+};
+const config = config2 as Partial<Config>
+export default buildConfigWithDefaults(config);
