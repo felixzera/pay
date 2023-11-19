@@ -1,4 +1,4 @@
-import { Where } from '../../types';
+import { Sort, Where } from '../../types';
 import { PayloadRequest } from '../../express/types';
 import executeAccess from '../../auth/executeAccess';
 import sanitizeInternalFields from '../../utilities/sanitizeInternalFields';
@@ -10,13 +10,14 @@ import { AccessResult } from '../../config/types';
 import { afterRead } from '../../fields/hooks/afterRead';
 import { queryDrafts } from '../../versions/drafts/queryDrafts';
 import { buildAfterOperation } from './utils';
+import { buildObjectSortParam } from '../../mongoose/buildObjectSortParam';
 
 export type Arguments = {
   collection: Collection
   where?: Where
   page?: number
   limit?: number
-  sort?: string
+  sort?: Sort
   depth?: number
   currentDepth?: number
   req?: PayloadRequest
@@ -115,16 +116,25 @@ async function find<T extends TypeWithID & Record<string, unknown>>(
 
   let sort;
   if (!hasNearConstraint) {
-    const [sortProperty, sortOrder] = buildSortParam({
-      sort: args.sort ?? collectionConfig.defaultSort,
-      config: payload.config,
-      fields: collectionConfig.fields,
-      timestamps: collectionConfig.timestamps,
-      locale,
-    });
-    sort = {
-      [sortProperty]: sortOrder,
-    };
+    if (typeof args.sort === 'object') {
+      sort = buildObjectSortParam({
+        sort: args.sort,
+        config: payload.config,
+        fields: collectionConfig.fields,
+        locale,
+      });
+    } else {
+      const [sortProperty, sortOrder] = buildSortParam({
+        sort: args.sort ?? collectionConfig.defaultSort,
+        config: payload.config,
+        fields: collectionConfig.fields,
+        timestamps: collectionConfig.timestamps,
+        locale,
+      });
+      sort = {
+        [sortProperty]: sortOrder,
+      };
+    }
   }
 
   const usePagination = pagination && limit !== 0;
