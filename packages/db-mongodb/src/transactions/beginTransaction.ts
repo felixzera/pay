@@ -1,29 +1,53 @@
 import type { TransactionOptions } from 'mongodb'
+import type { ClientSession } from 'mongoose'
 import type { BeginTransaction } from 'payload/database'
 
-import { APIError } from 'payload/errors'
 import { v4 as uuid } from 'uuid'
 
 import type { MongooseAdapter } from '../index'
 
+// eslint-disable-next-line @typescript-eslint/require-await
 export const beginTransaction: BeginTransaction = async function beginTransaction(
   this: MongooseAdapter,
   options: TransactionOptions,
 ) {
-  if (!this.connection) {
-    throw new APIError('beginTransaction called while no connection to the database exists')
-  }
+  let id
+  const transactionOptions = options || this.transactionOptions || undefined
+  try {
+    id = uuid()
+    const client = this.connection.getClient()
+    const session = client.startSession()
 
-  const client = this.connection.getClient()
-  const id = uuid()
+    let reject: () => Promise<unknown>
+    let resolve: () => Promise<unknown>
+    let clientSession: ClientSession
 
-  if (!this.sessions[id]) {
-    this.sessions[id] = client.startSession()
-  }
-  if (this.sessions[id].inTransaction()) {
-    this.payload.logger.warn('beginTransaction called while transaction already exists')
-  } else {
-    this.sessions[id].startTransaction(options || (this.transactionOptions as TransactionOptions))
+    const done = session
+      .withTransaction(async (tx) => {
+        clientSession = tx
+        await new Promise<void>((res, rej) => {
+          resolve = async () => {
+            res()
+            return done
+          }
+          reject = async () => {
+            rej()
+            return done
+          }
+        })
+      }, transactionOptions)
+      .catch((e) => {
+        // swallow
+      })
+
+    this.sessions[id] = {
+      clientSession,
+      reject,
+      resolve,
+    }
+  } catch (err) {
+    this.payload.logger.error(`Error: cannot begin transaction: ${err.message}`, err)
+    // process.exit(1)
   }
 
   return id

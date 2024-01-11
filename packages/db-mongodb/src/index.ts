@@ -62,7 +62,14 @@ export type MongooseAdapter = BaseDatabaseAdapter &
     connection: Connection
     globals: GlobalModel
     mongoMemoryServer: any
-    sessions: Record<number | string, ClientSession>
+    sessions: {
+      [id: string]: {
+        clientSession: ClientSession
+        reject: () => Promise<unknown>
+        resolve: () => Promise<unknown>
+      }
+    }
+    transactionOptions: TransactionOptions
     versions: {
       [slug: string]: CollectionModel
     }
@@ -71,21 +78,7 @@ export type MongooseAdapter = BaseDatabaseAdapter &
 type MongooseAdapterResult = (args: { payload: Payload }) => MongooseAdapter
 
 declare module 'payload' {
-  export interface DatabaseAdapter
-    extends Omit<BaseDatabaseAdapter, 'sessions'>,
-      Omit<Args, 'migrationDir'> {
-    collections: {
-      [slug: string]: CollectionModel
-    }
-    connection: Connection
-    globals: GlobalModel
-    mongoMemoryServer: any
-    sessions: Record<number | string, ClientSession>
-    transactionOptions: TransactionOptions
-    versions: {
-      [slug: string]: CollectionModel
-    }
-  }
+  export interface DatabaseAdapter extends MongooseAdapter {}
 }
 
 export function mongooseAdapter({
