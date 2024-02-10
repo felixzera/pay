@@ -4,7 +4,9 @@ import type { FeatureProvider } from '../../types'
 
 import { SlashMenuOption } from '../../../lexical/plugins/SlashMenu/LexicalTypeaheadMenuPlugin/types'
 import { TextDropdownSectionWithEntries } from '../../common/floatingSelectToolbarTextDropdownSection'
+import { listsSlashMenuGroup } from '../common/listsSlashMenuGroup'
 import { ListHTMLConverter, ListItemHTMLConverter } from '../htmlConverter'
+import { translationsClient } from '../translations'
 import { ORDERED_LIST } from './markdownTransformer'
 
 export const OrderedListFeature = (): FeatureProvider => {
@@ -22,7 +24,7 @@ export const OrderedListFeature = (): FeatureProvider => {
                   ),
                 isActive: () => false,
                 key: 'orderedList',
-                label: `Ordered List`,
+                label: ({ i18n }) => i18n.t('lexical:lists:orderedListLabel'),
                 onClick: ({ editor }) => {
                   editor.dispatchCommand(INSERT_ORDERED_LIST_COMMAND, undefined)
                 },
@@ -31,6 +33,7 @@ export const OrderedListFeature = (): FeatureProvider => {
             ]),
           ],
         },
+        i18nClient: featureProviderMap.has('unorderedList') ? null : translationsClient,
         markdownTransformers: [ORDERED_LIST],
         nodes: featureProviderMap.has('unorderedList')
           ? []
@@ -64,8 +67,7 @@ export const OrderedListFeature = (): FeatureProvider => {
         slashMenu: {
           options: [
             {
-              displayName: 'Lists',
-              key: 'lists',
+              ...listsSlashMenuGroup,
               options: [
                 new SlashMenuOption('orderedlist', {
                   Icon: () =>
@@ -73,8 +75,8 @@ export const OrderedListFeature = (): FeatureProvider => {
                     import('../../../lexical/ui/icons/OrderedList').then(
                       (module) => module.OrderedListIcon,
                     ),
-                  displayName: 'Ordered List',
                   keywords: ['ordered list', 'ol'],
+                  label: ({ i18n }) => i18n.t('lexical:lists:orderedListLabel'),
                   onSelect: ({ editor }) => {
                     editor.dispatchCommand(INSERT_ORDERED_LIST_COMMAND, undefined)
                   },

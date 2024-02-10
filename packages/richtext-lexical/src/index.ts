@@ -3,7 +3,7 @@ import type { SerializedEditorState } from 'lexical'
 import type { EditorConfig as LexicalEditorConfig } from 'lexical/LexicalEditor'
 import type { RichTextAdapter } from 'payload/types'
 
-import { withNullableJSONSchemaType } from 'payload/utilities'
+import { deepMerge, withNullableJSONSchemaType } from 'payload/utilities'
 
 import type { FeatureProvider } from './field/features/types'
 import type { EditorConfig, SanitizedEditorConfig } from './field/lexical/config/types'
@@ -17,6 +17,7 @@ import {
 import { sanitizeEditorConfig } from './field/lexical/config/sanitize'
 import { cloneDeep } from './field/lexical/utils/cloneDeep'
 import { richTextRelationshipPromise } from './populate/richTextRelationshipPromise'
+import { translationsClient, translationsServer } from './translations'
 import { richTextValidateHOC } from './validate'
 
 export type LexicalEditorProps = {
@@ -99,6 +100,8 @@ export function lexicalEditor(props?: LexicalEditorProps): LexicalRichTextAdapte
       })
     },
     editorConfig: finalSanitizedEditorConfig,
+    i18nClient: deepMerge(finalSanitizedEditorConfig.features.i18nClient, translationsClient),
+    i18nServer: deepMerge(finalSanitizedEditorConfig.features.i18nServer, translationsServer),
     outputSchema: ({ field, interfaceNameDefinitions, isRequired }) => {
       let outputSchema: JSONSchema4 = {
         // This schema matches the SerializedEditorState type so far, that it's possible to cast SerializedEditorState to this schema without any errors.

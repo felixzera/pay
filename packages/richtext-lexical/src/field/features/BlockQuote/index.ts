@@ -8,9 +8,11 @@ import type { HTMLConverter } from '../converters/html/converter/types'
 import type { FeatureProvider } from '../types'
 
 import { SlashMenuOption } from '../../lexical/plugins/SlashMenu/LexicalTypeaheadMenuPlugin/types'
+import { basicSlashMenuGroup } from '../common/basicSlashMenuGroup'
 import { TextDropdownSectionWithEntries } from '../common/floatingSelectToolbarTextDropdownSection'
 import { convertLexicalNodesToHTML } from '../converters/html/converter'
 import { MarkdownTransformer } from './markdownTransformer'
+import { translationsClient } from './translations'
 
 export const BlockQuoteFeature = (): FeatureProvider => {
   return {
@@ -27,7 +29,7 @@ export const BlockQuoteFeature = (): FeatureProvider => {
                   ),
                 isActive: () => false,
                 key: 'blockquote',
-                label: `Blockquote`,
+                label: ({ i18n }) => i18n.t('lexical:blockquote:label'),
                 onClick: ({ editor }) => {
                   editor.update(() => {
                     const selection = $getSelection()
@@ -41,6 +43,7 @@ export const BlockQuoteFeature = (): FeatureProvider => {
             ]),
           ],
         },
+        i18nClient: translationsClient,
         markdownTransformers: [MarkdownTransformer],
         nodes: [
           {
@@ -69,8 +72,7 @@ export const BlockQuoteFeature = (): FeatureProvider => {
         slashMenu: {
           options: [
             {
-              displayName: 'Basic',
-              key: 'basic',
+              ...basicSlashMenuGroup,
               options: [
                 new SlashMenuOption(`blockquote`, {
                   Icon: () =>
@@ -78,8 +80,8 @@ export const BlockQuoteFeature = (): FeatureProvider => {
                     import('../../lexical/ui/icons/Blockquote').then(
                       (module) => module.BlockquoteIcon,
                     ),
-                  displayName: `Blockquote`,
                   keywords: ['quote', 'blockquote'],
+                  label: ({ i18n }) => i18n.t('lexical:blockquote:label'),
                   onSelect: () => {
                     const selection = $getSelection()
                     if ($INTERNAL_isPointSelection(selection)) {

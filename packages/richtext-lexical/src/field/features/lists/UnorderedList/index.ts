@@ -4,7 +4,9 @@ import type { FeatureProvider } from '../../types'
 
 import { SlashMenuOption } from '../../../lexical/plugins/SlashMenu/LexicalTypeaheadMenuPlugin/types'
 import { TextDropdownSectionWithEntries } from '../../common/floatingSelectToolbarTextDropdownSection'
+import { listsSlashMenuGroup } from '../common/listsSlashMenuGroup'
 import { ListHTMLConverter, ListItemHTMLConverter } from '../htmlConverter'
+import { translationsClient } from '../translations'
 import { UNORDERED_LIST } from './markdownTransformer'
 
 export const UnorderedListFeature = (): FeatureProvider => {
@@ -22,7 +24,7 @@ export const UnorderedListFeature = (): FeatureProvider => {
                   ),
                 isActive: () => false,
                 key: 'unorderedList',
-                label: `Unordered List`,
+                label: ({ i18n }) => i18n.t('lexical:lists:unorderedListLabel'),
                 onClick: ({ editor }) => {
                   editor.dispatchCommand(INSERT_UNORDERED_LIST_COMMAND, undefined)
                 },
@@ -31,6 +33,7 @@ export const UnorderedListFeature = (): FeatureProvider => {
             ]),
           ],
         },
+        i18nClient: translationsClient,
         markdownTransformers: [UNORDERED_LIST],
         nodes: [
           {
@@ -60,8 +63,7 @@ export const UnorderedListFeature = (): FeatureProvider => {
         slashMenu: {
           options: [
             {
-              displayName: 'Lists',
-              key: 'lists',
+              ...listsSlashMenuGroup,
               options: [
                 new SlashMenuOption('unorderedlist', {
                   Icon: () =>
@@ -69,8 +71,8 @@ export const UnorderedListFeature = (): FeatureProvider => {
                     import('../../../lexical/ui/icons/UnorderedList').then(
                       (module) => module.UnorderedListIcon,
                     ),
-                  displayName: 'Unordered List',
                   keywords: ['unordered list', 'ul'],
+                  label: ({ i18n }) => i18n.t('lexical:lists:unorderedListLabel'),
                   onSelect: ({ editor }) => {
                     editor.dispatchCommand(INSERT_UNORDERED_LIST_COMMAND, undefined)
                   },

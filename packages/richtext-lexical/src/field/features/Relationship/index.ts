@@ -1,9 +1,11 @@
 import type { FeatureProvider } from '../types'
 
 import { SlashMenuOption } from '../../lexical/plugins/SlashMenu/LexicalTypeaheadMenuPlugin/types'
+import { basicSlashMenuGroup } from '../common/basicSlashMenuGroup'
 import { INSERT_RELATIONSHIP_WITH_DRAWER_COMMAND } from './drawer/commands'
 import { RelationshipNode } from './nodes/RelationshipNode'
 import { relationshipPopulationPromise } from './populationPromise'
+import { translationsClient } from './translations'
 
 export type RelationshipFeatureProps =
   | {
@@ -31,6 +33,7 @@ export const RelationshipFeature = (props?: RelationshipFeatureProps): FeaturePr
   return {
     feature: () => {
       return {
+        i18nClient: translationsClient,
         nodes: [
           {
             node: RelationshipNode,
@@ -59,8 +62,7 @@ export const RelationshipFeature = (props?: RelationshipFeatureProps): FeaturePr
         slashMenu: {
           options: [
             {
-              displayName: 'Basic',
-              key: 'basic',
+              ...basicSlashMenuGroup,
               options: [
                 new SlashMenuOption('relationship', {
                   Icon: () =>
@@ -68,8 +70,8 @@ export const RelationshipFeature = (props?: RelationshipFeatureProps): FeaturePr
                     import('../../lexical/ui/icons/Relationship').then(
                       (module) => module.RelationshipIcon,
                     ),
-                  displayName: 'Relationship',
                   keywords: ['relationship', 'relation', 'rel'],
+                  label: ({ i18n }) => i18n.t('lexical:relationship:label'),
                   onSelect: ({ editor }) => {
                     // dispatch INSERT_RELATIONSHIP_WITH_DRAWER_COMMAND
                     editor.dispatchCommand(INSERT_RELATIONSHIP_WITH_DRAWER_COMMAND, {

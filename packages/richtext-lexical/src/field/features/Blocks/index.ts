@@ -9,6 +9,7 @@ import { SlashMenuOption } from '../../lexical/plugins/SlashMenu/LexicalTypeahea
 import { BlockNode } from './nodes/BlocksNode'
 import { INSERT_BLOCK_COMMAND } from './plugin/commands'
 import { blockPopulationPromiseHOC } from './populationPromise'
+import { translationsClient } from './translations'
 import { blockValidationHOC } from './validate'
 
 export type BlocksFeatureProps = {
@@ -31,6 +32,7 @@ export const BlocksFeature = (props?: BlocksFeatureProps): FeatureProvider => {
   return {
     feature: () => {
       return {
+        i18nClient: translationsClient,
         generatedTypes: {
           modifyOutputSchema: ({ currentSchema, field, interfaceNameDefinitions }) => {
             const blocksField: BlockField = {
@@ -65,18 +67,18 @@ export const BlocksFeature = (props?: BlocksFeatureProps): FeatureProvider => {
         slashMenu: {
           options: [
             {
-              displayName: 'Blocks',
               key: 'blocks',
+              label: ({ i18n }) => i18n.t('lexical:blocks:slashMenuGroupLabel'),
               options: [
                 ...props.blocks.map((block) => {
                   return new SlashMenuOption('block-' + block.slug, {
                     Icon: () =>
                       // @ts-expect-error
                       import('../../lexical/ui/icons/Block').then((module) => module.BlockIcon),
-                    displayName: ({ i18n }) => {
+                    keywords: ['block', 'blocks', block.slug],
+                    label: ({ i18n }) => {
                       return getTranslation(block.labels.singular, i18n)
                     },
-                    keywords: ['block', 'blocks', block.slug],
                     onSelect: ({ editor }) => {
                       editor.dispatchCommand(INSERT_BLOCK_COMMAND, {
                         id: null,

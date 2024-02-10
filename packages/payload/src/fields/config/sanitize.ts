@@ -8,6 +8,7 @@ import {
   InvalidFieldRelationship,
   MissingFieldType,
 } from '../../errors'
+import { deepMerge } from '../../utilities/deepMerge'
 import { formatLabels, toWords } from '../../utilities/formatLabels'
 import { baseBlockFields } from '../baseFields/baseBlockFields'
 import { baseIDField } from '../baseFields/baseIDField'
@@ -25,6 +26,12 @@ type Args = {
   validRelationships: null | string[]
 }
 
+const addedRichTextI18ns = []
+
+function isOnServer() {
+  return !(typeof window != 'undefined' && window.document)
+}
+
 export const sanitizeFields = ({
   config,
   existingFieldNames = new Set(),
@@ -32,6 +39,8 @@ export const sanitizeFields = ({
   validRelationships,
 }: Args): Field[] => {
   if (!fields) return []
+
+  const isServer = isOnServer()
 
   return fields.map((unsanitizedField) => {
     const field: Field = { ...unsanitizedField }
@@ -44,8 +53,41 @@ export const sanitizeFields = ({
     }
 
     // Make sure that the richText field has an editor
-    if (field.type === 'richText' && !field.editor && config.editor) {
-      field.editor = config.editor
+    if (field.type === 'richText') {
+      if (!field.editor && config.editor) {
+        field.editor = config.editor
+      }
+
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { i18nServerToUse, serverEditor } = field?.editor?.i18nServer
+        ? { i18nServerToUse: field?.editor?.i18nServer, serverEditor: field?.editor }
+        : { i18nServerToUse: config?.editor?.i18nServer, serverEditor: config?.editor }
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { clientEditor, i18nClientToUse } = field?.editor?.i18nClient
+        ? { clientEditor: field?.editor, i18nClientToUse: field?.editor?.i18nClient }
+        : { clientEditor: config?.editor, i18nClientToUse: config?.editor?.i18nClient }
+
+      if (!config.i18n) {
+        config.i18n = {}
+      }
+      if (!config.i18n.resources) {
+        config.i18n.resources = {}
+      }
+
+      const stringifiedI18nServerToUse = JSON.stringify(i18nServerToUse)
+      const stringifiedI18nClientToUse = JSON.stringify(i18nClientToUse)
+
+      if (isServer && i18nServerToUse && !addedRichTextI18ns.includes(stringifiedI18nServerToUse)) {
+        addedRichTextI18ns.push(stringifiedI18nServerToUse)
+        config.i18n.resources = deepMerge(config.i18n.resources, i18nServerToUse)
+      } else if (
+        !isServer &&
+        i18nClientToUse &&
+        !addedRichTextI18ns.includes(stringifiedI18nClientToUse)
+      ) {
+        addedRichTextI18ns.push(stringifiedI18nClientToUse)
+        config.i18n.resources = deepMerge(config.i18n.resources, i18nClientToUse)
+      }
     }
 
     // Auto-label
@@ -113,7 +155,7 @@ export const sanitizeFields = ({
     if (fieldAffectsData(field)) {
       if (existingFieldNames.has(field.name)) {
         throw new DuplicateFieldName(field.name)
-      } else if (!['id', 'blockName'].includes(field.name)) {
+      } else if (!['blockName', 'id'].includes(field.name)) {
         existingFieldNames.add(field.name)
       }
 
@@ -176,9 +218,9 @@ export const sanitizeFields = ({
 
         unsanitizedBlock.fields = sanitizeFields({
           config,
+          existingFieldNames: new Set(),
           fields: block.fields,
           validRelationships,
-          existingFieldNames: new Set(),
         })
 
         return unsanitizedBlock

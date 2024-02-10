@@ -1,4 +1,5 @@
 import type { Transformer } from '@lexical/markdown'
+import type { Resource } from 'i18next'
 import type { JSONSchema4 } from 'json-schema'
 import type { Klass, LexicalEditor, LexicalNode, SerializedEditorState } from 'lexical'
 import type { SerializedLexicalNode } from 'lexical'
@@ -106,6 +107,8 @@ export type Feature = {
       incomingEditorState: SerializedEditorState
     }) => SerializedEditorState
   }
+  i18nClient?: Resource
+  i18nServer?: Resource
   markdownTransformers?: Transformer[]
   nodes?: Array<{
     converters?: {
@@ -268,6 +271,8 @@ export type SanitizedFeatures = Required<
       }) => SerializedEditorState
     >
   }
+  i18nClient: Resource
+  i18nServer: Resource
   plugins?: Array<SanitizedPlugin>
   /**  The node types mapped to their populationPromises */
   populationPromises: Map<string, Array<PopulationPromise>>

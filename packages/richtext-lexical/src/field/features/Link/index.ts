@@ -17,6 +17,7 @@ import { AutoLinkNode } from './nodes/AutoLinkNode'
 import { $isLinkNode, LinkNode, TOGGLE_LINK_COMMAND } from './nodes/LinkNode'
 import { TOGGLE_LINK_WITH_MODAL_COMMAND } from './plugins/floatingLinkEditor/LinkEditor/commands'
 import { linkPopulationPromiseHOC } from './populationPromise'
+import { translationsClient } from './translations'
 
 type ExclusiveLinkCollectionsProps =
   | {
@@ -97,6 +98,7 @@ export const LinkFeature = (props: LinkFeatureProps): FeatureProvider => {
             ]),
           ],
         },
+        i18nClient: translationsClient,
         nodes: [
           {
             converters: {

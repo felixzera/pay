@@ -446,6 +446,8 @@ export const richText = baseField.keys({
       LazyCellComponent: joi.func().optional(),
       LazyFieldComponent: joi.func().optional(),
       afterReadPromise: joi.func().optional(),
+      i18nClient: joi.object().optional(),
+      i18nServer: joi.object().optional(),
       outputSchema: joi.func().optional(),
       populationPromise: joi.func().optional(),
       validate: joi.func().required(),
