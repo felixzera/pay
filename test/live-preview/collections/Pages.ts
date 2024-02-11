@@ -1,9 +1,11 @@
 import type { CollectionConfig } from '../../../packages/payload/src/collections/config/types'
 
+import { lexicalEditor } from '../../../packages/richtext-lexical/src'
 import { Archive } from '../blocks/ArchiveBlock'
 import { CallToAction } from '../blocks/CallToAction'
 import { Content } from '../blocks/Content'
 import { MediaBlock } from '../blocks/MediaBlock'
+import CollectionLivePreviewButton from '../components/CollectionLivePreviewButton'
 import { hero } from '../fields/hero'
 import { pagesSlug, tenantsSlug } from '../shared'
 
@@ -18,6 +20,15 @@ export const Pages: CollectionConfig = {
   admin: {
     useAsTitle: 'title',
     defaultColumns: ['id', 'title', 'slug', 'createdAt'],
+    components: {
+      views: {
+        Edit: {
+          LivePreview: {
+            actions: [CollectionLivePreviewButton],
+          },
+        },
+      },
+    },
   },
   fields: [
     {
@@ -62,8 +73,15 @@ export const Pages: CollectionConfig = {
           label: 'Test',
           fields: [
             {
-              name: 'relationshipInRichText',
+              label: 'Rich Text — Slate',
               type: 'richText',
+              name: 'richTextSlate',
+            },
+            {
+              label: 'Rich Text — Lexical',
+              type: 'richText',
+              name: 'richTextLexical',
+              editor: lexicalEditor({}),
             },
             {
               name: 'relationshipAsUpload',

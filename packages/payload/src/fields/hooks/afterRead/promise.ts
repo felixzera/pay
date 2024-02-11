@@ -6,6 +6,7 @@ import type { SanitizedGlobalConfig } from '../../../globals/config/types'
 import type { Field, TabAsField } from '../../config/types'
 
 import { fieldAffectsData, tabHasName } from '../../config/types'
+import getValueWithDefault from '../../getDefaultValue'
 import relationshipPopulationPromise from './relationshipPopulationPromise'
 import { traverseFields } from './traverseFields'
 
@@ -249,6 +250,7 @@ export const promise = async ({
     }
 
     // Execute access control
+    let allowDefaultValue = true
     if (triggerAccessControl && field.access && field.access.read) {
       const result = overrideAccess
         ? true
@@ -261,8 +263,24 @@ export const promise = async ({
           })
 
       if (!result) {
+        allowDefaultValue = false
         delete siblingDoc[field.name]
       }
+    }
+
+    // Set defaultValue on the field for globals being returned without being first created
+    // or collection documents created prior to having a default
+    if (
+      allowDefaultValue &&
+      typeof siblingDoc[field.name] === 'undefined' &&
+      typeof field.defaultValue !== 'undefined'
+    ) {
+      siblingDoc[field.name] = await getValueWithDefault({
+        defaultValue: field.defaultValue,
+        locale: req.locale,
+        user: req.user,
+        value: siblingDoc[field.name],
+      })
     }
 
     if (field.type === 'relationship' || field.type === 'upload') {

@@ -1,15 +1,13 @@
-import type { Block } from 'payload/types'
+import type { Block, BlockField } from 'payload/types'
 
 import { baseBlockFields } from 'payload/config'
-import { formatLabels, getTranslation } from 'payload/utilities'
+import { fieldsToJSONSchema, formatLabels, getTranslation } from 'payload/utilities'
 
 import type { FeatureProvider } from '../types'
 
 import { SlashMenuOption } from '../../lexical/plugins/SlashMenu/LexicalTypeaheadMenuPlugin/types'
-import { BlockIcon } from '../../lexical/ui/icons/Block'
-import './index.scss'
 import { BlockNode } from './nodes/BlocksNode'
-import { BlocksPlugin, INSERT_BLOCK_COMMAND } from './plugin'
+import { INSERT_BLOCK_COMMAND } from './plugin/commands'
 import { blockPopulationPromiseHOC } from './populationPromise'
 import { blockValidationHOC } from './validate'
 
@@ -33,6 +31,20 @@ export const BlocksFeature = (props?: BlocksFeatureProps): FeatureProvider => {
   return {
     feature: () => {
       return {
+        generatedTypes: {
+          modifyOutputSchema: ({ currentSchema, field, interfaceNameDefinitions }) => {
+            const blocksField: BlockField = {
+              name: field?.name + '_lexical_blocks',
+              blocks: props.blocks,
+              type: 'blocks',
+            }
+            // This is only done so that interfaceNameDefinitions sets those block's interfaceNames.
+            // we don't actually use the JSON Schema itself in the generated types yet.
+            fieldsToJSONSchema({}, [blocksField], interfaceNameDefinitions)
+
+            return currentSchema
+          },
+        },
         nodes: [
           {
             node: BlockNode,
@@ -43,7 +55,9 @@ export const BlocksFeature = (props?: BlocksFeatureProps): FeatureProvider => {
         ],
         plugins: [
           {
-            Component: BlocksPlugin,
+            Component: () =>
+              // @ts-expect-error
+              import('./plugin').then((module) => module.BlocksPlugin),
             position: 'normal',
           },
         ],
@@ -56,7 +70,9 @@ export const BlocksFeature = (props?: BlocksFeatureProps): FeatureProvider => {
               options: [
                 ...props.blocks.map((block) => {
                   return new SlashMenuOption('block-' + block.slug, {
-                    Icon: BlockIcon,
+                    Icon: () =>
+                      // @ts-expect-error
+                      import('../../lexical/ui/icons/Block').then((module) => module.BlockIcon),
                     displayName: ({ i18n }) => {
                       return getTranslation(block.labels.singular, i18n)
                     },

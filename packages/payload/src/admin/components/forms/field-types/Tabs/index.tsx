@@ -83,7 +83,7 @@ const TabsField: React.FC<Props> = (props) => {
   const { preferencesKey } = useDocumentInfo()
   const { i18n } = useTranslation()
 
-  const isWithinCollapsible = useCollapsible()
+  const { withinCollapsible } = useCollapsible()
   const [activeTabIndex, setActiveTabIndex] = useState<number>(0)
   const tabsPrefKey = `tabs-${indexPath}`
 
@@ -138,7 +138,7 @@ const TabsField: React.FC<Props> = (props) => {
         fieldBaseClass,
         className,
         baseClass,
-        isWithinCollapsible && `${baseClass}--within-collapsible`,
+        withinCollapsible && `${baseClass}--within-collapsible`,
       ]
         .filter(Boolean)
         .join(' ')}
@@ -177,6 +177,7 @@ const TabsField: React.FC<Props> = (props) => {
                   className={`${baseClass}__description`}
                   description={activeTabConfig.description}
                   marginPlacement="bottom"
+                  path={path}
                 />
                 <RenderFields
                   fieldSchema={activeTabConfig.fields.map((field) => {

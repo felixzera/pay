@@ -49,7 +49,7 @@ const RichText: React.FC<FieldProps> = (props) => {
     validate: memoizedValidate,
   })
 
-  const { errorMessage, setValue, showError, value } = fieldType
+  const { errorMessage, initialValue, setValue, showError, value } = fieldType
 
   const classes = [
     baseClass,
@@ -73,11 +73,12 @@ const RichText: React.FC<FieldProps> = (props) => {
       <div className={`${baseClass}__wrap`}>
         <Error message={errorMessage} showError={showError} />
         <Label htmlFor={`field-${path.replace(/\./g, '__')}`} label={label} required={required} />
-        <ErrorBoundary fallbackRender={fallbackRender} onReset={(details) => {}}>
+        <ErrorBoundary fallbackRender={fallbackRender} onReset={() => {}}>
           <LexicalProvider
             editorConfig={editorConfig}
             fieldProps={props}
-            onChange={(editorState, editor, tags) => {
+            key={JSON.stringify({ initialValue, path })} // makes sure lexical is completely re-rendered when initialValue changes, bypassing the lexical-internal value memoization. That way, external changes to the form will update the editor. More infos in PR description (https://github.com/payloadcms/payload/pull/5010)
+            onChange={(editorState) => {
               let serializedEditorState = editorState.toJSON()
 
               // Transform state through save hooks
@@ -94,7 +95,7 @@ const RichText: React.FC<FieldProps> = (props) => {
             value={value}
           />
         </ErrorBoundary>
-        <FieldDescription description={description} value={value} />
+        <FieldDescription description={description} path={path} value={value} />
       </div>
     </div>
   )
