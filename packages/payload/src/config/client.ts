@@ -49,6 +49,7 @@ export const createClientConfig = async ({
 }: {
   config: SanitizedConfig
   t: TFunction
+  // eslint-disable-next-line @typescript-eslint/require-await
 }): Promise<ClientConfig> => {
   const clientConfig: ClientConfig = { ...config }
 

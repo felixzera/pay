@@ -1,6 +1,6 @@
 import type { Language } from '../types.js'
 
-export const zhTw: Language = {
+export const zhTW: Language = {
   dateFNSKey: 'zh-TW',
   translations: {
     authentication: {
@@ -77,6 +77,8 @@ export const zhTw: Language = {
       invalidFileType: '無效的文件類型',
       invalidFileTypeValue: '無效的文件類型： {{value}}',
       loadingDocument: '加載ID為{{id}}的文件時出現了問題。',
+      localesNotSaved_one: '這個語言環境無法被儲存：',
+      localesNotSaved_other: '以下的語言環境無法被儲存：',
       missingEmail: '缺少電子郵件。',
       missingIDOfDocument: '缺少需要更新的文檔的ID。',
       missingIDOfVersion: '缺少版本的ID。',
@@ -351,7 +353,6 @@ export const zhTw: Language = {
       publish: '發佈',
       publishChanges: '發佈修改',
       published: '已發佈',
-      publishing: '發布',
       restoreThisVersion: '回復此版本',
       restoredSuccessfully: '回復成功。',
       restoring: '回復中...',

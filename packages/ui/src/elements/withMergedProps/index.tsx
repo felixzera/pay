@@ -35,7 +35,7 @@ export function withMergedProps<ToMergeIntoProps, CompleteReturnProps>({
 
     if (sanitizeServerOnlyProps) {
       serverProps.forEach((prop) => {
-        delete (mergedProps)[prop]
+        delete mergedProps[prop]
       })
     }
 
