@@ -1,0 +1,1 @@
+# Resend REST Email Adapter
